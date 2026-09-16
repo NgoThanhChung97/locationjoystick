@@ -12,7 +12,7 @@ data class SettingsUiState(
     val speedUnit: SpeedUnit = SpeedUnit.KMH,
     val featureOrder: List<AppFeature> = AppFeature.DEFAULT_ORDER,
     val enabledWidgetFeatures: Set<AppFeature> = AppFeature.DEFAULT_WIDGET_ENABLED,
-    val enabledSpeedProfileIds: Set<String> = setOf("walk", "run", "bike"),
+    val enabledSpeedProfileIds: Set<String> = setOf("walk", "run", "bike", "drive"),
     val rememberLastLocation: Boolean = true,
     val mapFollowsLocation: Boolean = true,
     val jitterIdleRadiusMeters: Double = AppConstants.JitterConstants.DEFAULT_IDLE_RADIUS_METERS,

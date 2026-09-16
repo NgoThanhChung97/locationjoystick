@@ -1,7 +1,6 @@
 package com.locationjoystick.core.designsystem.component
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,11 +33,14 @@ fun RouteStartSheetContent(
     var followRoads by remember(key) { mutableStateOf(false) }
     var isAwaitingRoadStart by remember(key) { mutableStateOf(false) }
 
-    LaunchedEffect(isRoadRouteFetchInFlight) {
-        if (isAwaitingRoadStart && !isRoadRouteFetchInFlight) {
+    RoadFetchDismissEffect(
+        awaiting = isAwaitingRoadStart,
+        isRoadRouteFetchInFlight = isRoadRouteFetchInFlight,
+        onResolved = {
+            isAwaitingRoadStart = false
             onCancel()
-        }
-    }
+        },
+    )
 
     LjRouteStartOptions(
         loop = loop,

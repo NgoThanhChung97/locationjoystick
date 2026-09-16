@@ -20,7 +20,6 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,6 +37,7 @@ import com.locationjoystick.core.designsystem.component.FavoritesList
 import com.locationjoystick.core.designsystem.component.LjButton
 import com.locationjoystick.core.designsystem.component.LjOutlinedButton
 import com.locationjoystick.core.designsystem.component.LjTextButton
+import com.locationjoystick.core.designsystem.component.RoadFetchDismissEffect
 import com.locationjoystick.core.designsystem.component.RouteStartSheetContent
 import com.locationjoystick.core.designsystem.component.RoutesPickerList
 import com.locationjoystick.core.model.RouteType
@@ -169,12 +169,14 @@ internal fun PendingTapSheet(
     isRoadRouteFetchInFlight: Boolean = false,
 ) {
     var isAwaitingRoadWalk by remember { mutableStateOf(false) }
-    LaunchedEffect(isRoadRouteFetchInFlight) {
-        if (isAwaitingRoadWalk && !isRoadRouteFetchInFlight) {
-            onAction(MapAction.ClearPendingTap)
+    RoadFetchDismissEffect(
+        awaiting = isAwaitingRoadWalk,
+        isRoadRouteFetchInFlight = isRoadRouteFetchInFlight,
+        onResolved = {
             isAwaitingRoadWalk = false
-        }
-    }
+            onAction(MapAction.ClearPendingTap)
+        },
+    )
 
     ModalBottomSheet(
         onDismissRequest = { onAction(MapAction.ClearPendingTap) },

@@ -207,6 +207,9 @@ class RouteCreatorViewModel
                     waypoints = waypoints,
                     isLooping = false,
                     routeType = routeType,
+                    // Default new routes to the Drive speed profile (teleport routes never read it).
+                    speedProfileId =
+                        if (routeType == RouteType.TELEPORT) null else AppConstants.ProfileConstants.PROFILE_ID_DRIVE,
                     createdAt = System.currentTimeMillis(),
                     updatedAt = System.currentTimeMillis(),
                 )

@@ -76,6 +76,7 @@ class MapController
         private val ephemeralReplayController: EphemeralReplayController,
         private val osrmClient: OsrmClient,
         private val routingErrorReporter: RoutingErrorReporter,
+        private val deviceLocationProvider: DeviceLocationProvider,
         @param:ApplicationScope private val appScope: CoroutineScope,
     ) {
         @Suppress("ktlint:standard:property-naming")
@@ -298,10 +299,11 @@ class MapController
             appScope.launch {
                 if (locationRepository.currentPosition.value == null) {
                     val remember = settingsRepository.getRememberLastLocation().first()
-                    if (remember) {
-                        val last = settingsRepository.getLastLocation().first()
-                        if (last != null) locationRepository.setPositionInternal(last)
-                    }
+                    val remembered = if (remember) settingsRepository.getLastLocation().first() else null
+                    // Fall back to the device's real GPS fix so the app defaults to where the phone
+                    // actually is (per device) instead of the hardcoded MapConstants default.
+                    val seed = remembered ?: deviceLocationProvider.lastKnownLocation()
+                    if (seed != null) locationRepository.setPositionInternal(seed)
                 }
             }
         }
@@ -313,6 +315,7 @@ class MapController
                 val startPos =
                     locationRepository.currentPosition.value
                         ?: settingsRepository.getLastLocation().first()
+                        ?: deviceLocationProvider.lastKnownLocation()
                         ?: LatLng(AppConstants.MapConstants.DEFAULT_LAT, AppConstants.MapConstants.DEFAULT_LON)
                 ContextCompat.startForegroundService(
                     context,

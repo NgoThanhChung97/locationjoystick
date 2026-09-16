@@ -29,7 +29,8 @@ object AppConstants {
         const val MAX_SPEED_MS = 15.0
         const val ANTI_CHEAT_WARNING_THRESHOLD_MS = 8.0
         const val DEFAULT_SPEED_UNIT = "KMH"
-        val DEFAULT_ENABLED_SPEED_PROFILE_IDS = setOf(PROFILE_ID_WALK, PROFILE_ID_RUN, PROFILE_ID_BIKE)
+        val DEFAULT_ENABLED_SPEED_PROFILE_IDS =
+            setOf(PROFILE_ID_WALK, PROFILE_ID_RUN, PROFILE_ID_BIKE, PROFILE_ID_DRIVE)
     }
 
     object JitterConstants {
@@ -145,6 +146,15 @@ object AppConstants {
         const val BISECTION_MIN_DISTANCE_METERS = 2_500.0
         const val BISECTION_MAX_DEPTH = 5
         const val BISECTION_TIME_BUDGET_MS = 2_000L
+
+        /**
+         * How long a road-start/walk sheet waits to observe the road-fetch in-flight flag rise to
+         * `true` before assuming the fetch already finished. A fast failure (offline) or an instant
+         * resolve can flip the flag `true→false` before that rising edge propagates through the
+         * service→repository→ViewModel→Compose StateFlow chain (StateFlow conflates), so a sheet that
+         * waited for the rising edge would otherwise stay stuck on its loading spinner forever.
+         */
+        const val ROAD_START_OBSERVE_TIMEOUT_MS = 3_000L
     }
 
     object MapConstants {
@@ -313,6 +323,17 @@ object AppConstants {
         const val WAYPOINT_SNAP_THRESHOLD_METERS = 1.0
         const val MIN_TELEPORT_WAIT_SECONDS = 1
         const val DEFAULT_TELEPORT_WAIT_SECONDS = 5
+
+        /**
+         * Max saved waypoints a route may have for "Follow roads" to road-snap the legs *between*
+         * them. Road-following resolves one OSRM request per consecutive pair, sequentially, so a
+         * dense route (a recording or GPX import with hundreds of points) would fire hundreds of
+         * serial requests — minutes of loading — for no benefit: such a route already traces the
+         * real path densely. Above this count the between-waypoint expansion is skipped and the
+         * route replays on its own points (the walk-to-start leg still follows roads). Manually
+         * placed routes that actually need snapping have far fewer points than this.
+         */
+        const val MAX_FOLLOW_ROADS_EXPANSION_WAYPOINTS = 25
     }
 
     object DatabaseConstants {

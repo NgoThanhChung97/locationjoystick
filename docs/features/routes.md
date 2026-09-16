@@ -37,7 +37,7 @@ Routes can also be imported from GPX files via the Routes screen overflow menu �
 
 ### Per-Route Speed Profile
 
-A route may pin a speed profile via the Route Detail (edit) screen — a dropdown (`ExposedDropdownMenuBox`) below the name field, showing "None" plus all 5 presets. Default: `null` ("None"), meaning replay starts at whatever speed profile is currently active globally. When a route pins a profile, replay starts at that profile's speed instead. Either way, this only seeds the replay's starting speed (resolved via `SettingsRepository.getRouteSpeedMs(route.speedProfileId)` in `StartRouteReplayUseCase`) — the user can still change speed mid-replay via the widget's Speed Cycle button (or Settings → GPS) like any other movement mode; a pin does not lock the speed for the session.
+A route may pin a speed profile via the Route Detail (edit) screen — a dropdown (`ExposedDropdownMenuBox`) below the name field, showing "None" plus all 5 presets. Newly created routes (from the Route Creator) default to the **Drive** profile (`AppConstants.ProfileConstants.PROFILE_ID_DRIVE`), set in `RouteCreatorViewModel.saveRoute` — except `RouteType.TELEPORT` routes, which never read `speedProfileId` and stay `null`. A pin can still be changed (or cleared back to "None") on the Route Detail screen; "None" means replay starts at whatever speed profile is currently active globally, while a pinned profile seeds replay at that profile's speed instead. Either way, this only seeds the replay's starting speed (resolved via `SettingsRepository.getRouteSpeedMs(route.speedProfileId)` in `StartRouteReplayUseCase`) — the user can still change speed mid-replay via the widget's Speed Cycle button (or Settings → GPS) like any other movement mode; a pin does not lock the speed for the session.
 
 The speed profile control is hidden entirely for `RouteType.TELEPORT` routes, since teleport replay never reads `speedProfileId` (see "Teleport Routes" below).
 
@@ -81,6 +81,15 @@ button and, at the bottom, **Cancel** / **Start**.
   reported via `RoutingErrorReporter` (e.g. "Road-following partially
   unavailable — 2 of 5 legs used straight-line paths"), mirroring
   `RoamingEngine.planRoadFollowingRoute` (@docs/features/roaming.md).
+  Between-waypoint road-snapping resolves one OSRM request per consecutive
+  pair, sequentially, so it only runs when the route has at most
+  `AppConstants.RouteConstants.MAX_FOLLOW_ROADS_EXPANSION_WAYPOINTS` (25)
+  saved waypoints. A denser route (a recording or GPX import with hundreds
+  of points) already traces the real path point-by-point, so
+  `ReplayOrchestrator.expandWaypointsForFollowRoads` skips the expansion and
+  replays on the route's own waypoints instead of firing hundreds of serial
+  requests (minutes of loading); the walk-to-start leg still road-follows,
+  and every own-waypoint stays a jump-to-waypoint boundary.
 - **Teleport** — instantly teleports to the route's first waypoint (last,
   if Reverse is checked). Does not start replay; the sheet stays open so
   the user can still press Start afterward. Hidden when

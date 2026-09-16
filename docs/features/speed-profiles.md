@@ -25,7 +25,7 @@ Key files: `:feature:settings:impl/SettingsScreen.kt`, `:core:data/SettingsRepos
 
 Settings → Menus → "Speed Cycle" lets the user choose which of the five presets the widget's Speed Cycle button cycles through — useful since most users only need a subset.
 
-- Default enabled: Walk, Run, Bike. Slow Walk and Drive are opt-in.
+- Default enabled: Walk, Run, Bike, Drive. Slow Walk is opt-in.
 - Stored as `AppSettings.enabledSpeedProfileIds` (`Set<String>` of profile IDs), DataStore key `enabled_speed_profile_ids`.
 - Editing speed *values* (Settings → GPS) always shows and edits all 5 profiles regardless of enablement — this toggle only affects which profiles are cycled through, not which can be edited.
 - If the enabled set is ever empty, `SettingsRepository.getEnabledSpeedProfiles()` falls back to all 5 profiles so cycling never breaks. The Settings UI itself also blocks unchecking the last enabled profile.

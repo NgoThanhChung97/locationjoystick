@@ -2,6 +2,7 @@ package com.locationjoystick.core.location
 
 import android.content.Context
 import android.util.Log
+import com.locationjoystick.core.common.constants.AppConstants
 import com.locationjoystick.core.common.util.BearingTracker
 import com.locationjoystick.core.data.LocationRepository
 import com.locationjoystick.core.data.RoamingRepository
@@ -413,6 +414,14 @@ internal class ReplayOrchestrator(
      *   real, named stops ("boundary indices"), so jump-to-waypoint keeps targeting real stops.
      */
     private suspend fun expandWaypointsForFollowRoads(waypoints: List<LatLng>): Pair<List<LatLng>, List<Int>> {
+        // A dense route (recording / GPX import) already traces the real path point-by-point, and
+        // road-snapping its legs means one sequential OSRM request per consecutive pair — hundreds
+        // of serial round trips, minutes of loading, for no benefit. Above the cap, replay on the
+        // route's own points instead; every point is its own boundary so jump-to-waypoint still
+        // works, and the walk-to-start leg still road-follows (it's a single request).
+        if (waypoints.size > AppConstants.RouteConstants.MAX_FOLLOW_ROADS_EXPANSION_WAYPOINTS) {
+            return waypoints to waypoints.indices.toList()
+        }
         val expanded = mutableListOf(waypoints.first())
         val boundaryIndices = mutableListOf(0)
         var fallbackCount = 0
